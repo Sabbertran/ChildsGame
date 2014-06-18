@@ -1,0 +1,65 @@
+name: HideAndSeek
+main: me.sabbertran.hideandseek.HideAndSeek
+version: 1.0
+website: http://www.sabbertran.tk/
+author: Sabbertran
+description: HideAndSeek Plugin
+depend: [ProtocolLib, LibsDisguises]
+commands:
+  hideandseek:
+    description: HideAndSeek Command
+    usage: "/hideandseek"
+    aliases: [has]
+  arena:
+    description: HideAndSeek Arena Command
+    usage: "/arena"
+  leave:
+    description: HideAndSeek Leave Command
+    usage: "/leave"
+permissions:
+   hideandseek.user.arena.join:
+     description: Allows the player to join an arena
+     default: false
+   hideandseek.user.arena.leave:
+     description: Allows the player to use the /leave command
+     default: false
+   hideandseek.admin.arena.create:
+     description: Allows the player to use the /arena create command to create an arena
+     default: false
+   hideandseek.admin.arena.tool:
+     description: Allows the player to use the /arena tool command and to use the tool
+     default: false
+   hideandseek.admin.arena.blocks:
+     description: Allows the player to use the /arena blocks command to setup blocks for an arena
+     default: false
+   hideandseek.admin.arena.sign:
+     description: Allows the player to create an arena sign
+     default: op
+   hideandseek.admin.arena.list:
+     description: Allows the player to use the /arena list command to get a list of all existing arenas
+     default: op
+   hideandseek.admin.arena.delete:
+     description: Allows the player to use the /arena delete command to delete an arena
+     default: op
+   hideandseek.*:
+     description: Gives access to all permissions
+     default: false
+     children:
+       hideandseek.admin.*: true
+       hideandseek.user.*: true
+   hideandseek.admin.*:
+     description: Gives access to all admin permissions
+     default: false
+     children:
+       hideandseek.admin.arena.create: true
+       hideandseek.admin.arena.tool: true
+       hideandseek.admin.arena.blocks: true
+       hideandseek.admin.arena.sign: true
+       hideandseek.admin.arena.list: true
+   hideandseek.user.*:
+     description: Gives access to all user permissions
+     default: false
+     children:
+       hideandseek.user.arena.join: true
+       hideandseek.user.arena.leave: true
+    
