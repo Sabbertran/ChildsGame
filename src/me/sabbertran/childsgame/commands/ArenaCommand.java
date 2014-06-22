@@ -1,7 +1,7 @@
-package me.sabbertran.hideandseek.commands;
+package me.sabbertran.childsgame.commands;
 
-import me.sabbertran.hideandseek.Arena;
-import me.sabbertran.hideandseek.HideAndSeek;
+import me.sabbertran.childsgame.Arena;
+import me.sabbertran.childsgame.ChildsGame;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,9 +13,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class ArenaCommand implements CommandExecutor
 {
 
-    private HideAndSeek main;
+    private ChildsGame main;
 
-    public ArenaCommand(HideAndSeek has)
+    public ArenaCommand(ChildsGame has)
     {
         this.main = has;
     }
@@ -27,7 +27,7 @@ public class ArenaCommand implements CommandExecutor
         {
             if (args[0].equals("create"))
             {
-                if (sender.hasPermission("hideandseek.admin.arena.create"))
+                if (sender.hasPermission("childsgame.admin.arena.create"))
                 {
                     if (args.length == 4)
                     {
@@ -75,7 +75,7 @@ public class ArenaCommand implements CommandExecutor
                 if (sender instanceof Player)
                 {
                     Player p = (Player) sender;
-                    if (p.hasPermission("hideandseek.admin.arena.tool"))
+                    if (p.hasPermission("childsgame.admin.arena.tool"))
                     {
                         if (args.length == 2)
                         {
@@ -114,7 +114,7 @@ public class ArenaCommand implements CommandExecutor
                 }
             } else if (args[0].equalsIgnoreCase("blocks"))
             {
-                if (sender.hasPermission("hideandseek.admin.arena.blocks"))
+                if (sender.hasPermission("childsgame.admin.arena.blocks"))
                 {
                     if (args.length == 3)
                     {
@@ -123,7 +123,10 @@ public class ArenaCommand implements CommandExecutor
                             try
                             {
                                 String[] ids = args[2].split(",");
-                                main.getArenas().get(args[1]).getBlocks().clear();
+                                if (main.getArenas().get(args[1]).getBlocks() != null)
+                                {
+                                    main.getArenas().get(args[1]).getBlocks().clear();
+                                }
                                 for (String id : ids)
                                 {
                                     String[] block = id.split(":");
@@ -165,7 +168,7 @@ public class ArenaCommand implements CommandExecutor
                 }
             } else if (args[0].equalsIgnoreCase("delete"))
             {
-                if (sender.hasPermission("hideandseek.admin.arena.delete"))
+                if (sender.hasPermission("childsgame.admin.arena.delete"))
                 {
                     if (args.length == 2)
                     {
@@ -200,7 +203,7 @@ public class ArenaCommand implements CommandExecutor
                 }
             } else if (args[0].equalsIgnoreCase("list"))
             {
-                if (sender.hasPermission("hideandseek.admin.arena.list"))
+                if (sender.hasPermission("childsgame.admin.arena.list"))
                 {
 //                sender.sendMessage("Currently there are " + main.getArenas().size() + " arenas:");
                     sender.sendMessage(main.getMessages().get(39).replace("%amount", String.valueOf(main.getArenas().size())));

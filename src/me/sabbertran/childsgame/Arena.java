@@ -1,11 +1,13 @@
-package me.sabbertran.hideandseek;
+package me.sabbertran.childsgame;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -15,11 +17,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
 
 public class Arena
 {
 
-    private HideAndSeek main;
+    private ChildsGame main;
 
     private String name;
     private Location loc1, loc2, spawnHider, spawnSeeker, spawnWaiting, spawnEnd;
@@ -30,6 +37,7 @@ public class Arena
     private HashMap<String, Boolean> seekers; //seeker, ableToMove
     private HashMap<String, Location> solidBlocks;
     private HashMap<String, Integer> sneakingTasks;
+    private int secondsLeft, secondsLeftTask;
     private int sneakingCountdown;
     private HashMap<String, Integer> sneakingCountdowns;
 
@@ -41,7 +49,7 @@ public class Arena
     private HashMap<String, Integer> seekerRespawnCountdowns;
     private HashMap<String, Integer> seekerRespawnTasks;
 
-    public Arena(HideAndSeek has, String name, int maxPlayers, int startPlayers)
+    public Arena(ChildsGame has, String name, int maxPlayers, int startPlayers)
     {
         this.main = has;
         this.name = name;
@@ -55,14 +63,15 @@ public class Arena
         this.sneakingCountdown = 5;
         this.sneakingCountdowns = new HashMap<String, Integer>();
 
+        this.secondsLeft = main.getConfig().getInt("Arena.GameTime");
         this.countdown = main.getConfig().getInt("Arena.Countdown");
         this.seekerCountdown = main.getConfig().getInt("Arena.SeekerCountdown");
         this.seekerRespawnCountdown = main.getConfig().getInt("Arena.SeekerRespawnCountdown");
         this.seekerRespawnCountdowns = new HashMap<String, Integer>();
         this.seekerRespawnTasks = new HashMap<String, Integer>();
     }
-    
-    public Arena(HideAndSeek has, String name, Location loc1, Location loc2, Location spawnHider, Location spawnSeeker, Location spawnWaiting, Location spawnEnd, Sign sign, int maxPlayers, int startPlayers, HashMap<Integer, String> bl)
+
+    public Arena(ChildsGame has, String name, Location loc1, Location loc2, Location spawnHider, Location spawnSeeker, Location spawnWaiting, Location spawnEnd, Sign sign, int maxPlayers, int startPlayers, HashMap<Integer, String> bl)
     {
         this.main = has;
         this.name = name;
@@ -76,14 +85,15 @@ public class Arena
         this.maxPlayers = maxPlayers;
         this.startPlayers = startPlayers;
         this.blocks = bl;
-        
+
         this.players = new HashMap<String, Integer>();
         this.seekers = new HashMap<String, Boolean>();
         this.solidBlocks = new HashMap<String, Location>();
         this.sneakingTasks = new HashMap<String, Integer>();
         this.sneakingCountdown = 5;
         this.sneakingCountdowns = new HashMap<String, Integer>();
-        
+
+        this.secondsLeft = main.getConfig().getInt("Arena.GameTime");
         this.countdown = main.getConfig().getInt("Arena.Countdown");
         this.seekerCountdown = main.getConfig().getInt("Arena.SeekerCountdown");
         this.seekerRespawnCountdown = main.getConfig().getInt("Arena.SeekerRespawnCountdown");
@@ -165,6 +175,20 @@ public class Arena
 
         startHiders();
         startSeekers();
+
+        secondsLeftTask = main.getServer().getScheduler().scheduleSyncRepeatingTask(main, new Runnable()
+        {
+            public void run()
+            {
+                if (secondsLeft == 0)
+                {
+                    main.getServer().getScheduler().cancelTask(secondsLeftTask);
+                    resetArena();
+                }
+                updateScoreboard();
+                secondsLeft--;
+            }
+        }, 20L, 20L);
     }
 
     public void startHiders()
@@ -245,6 +269,38 @@ public class Arena
         }, 20L, 20L);
     }
 
+    public void updateScoreboard()
+    {
+        ScoreboardManager manager = main.getServer().getScoreboardManager();
+        Scoreboard board = manager.getNewScoreboard();
+        if (state == 2)
+        {
+            Objective childsgame = board.registerNewObjective(main.getConfig().getString("Name"), "dummy");
+            childsgame.setDisplaySlot(DisplaySlot.SIDEBAR);
+            childsgame.setDisplayName(main.getConfig().getString("Name"));
+            Score time = childsgame.getScore(ChatColor.GOLD + "Seconds:");
+            Score hider = childsgame.getScore(ChatColor.GREEN + "Hider:");
+            Score seeker = childsgame.getScore(ChatColor.GREEN + "Seeker:");
+            int hi = 0;
+            for (String s : players.keySet())
+            {
+                if (!seekers.containsKey(s))
+                {
+                    hi++;
+                }
+            }
+            time.setScore(secondsLeft);
+            hider.setScore(hi);
+            seeker.setScore(seekers.size());
+        }
+
+        for (String uuid : players.keySet())
+        {
+            Player p = main.getServer().getPlayer(UUID.fromString(uuid));
+            p.setScoreboard(board);
+        }
+    }
+
     public void respawnSeeker(final Player p)
     {
         seekers.put(p.getUniqueId().toString(), false);
@@ -255,13 +311,32 @@ public class Arena
         p.getInventory().setBoots(new ItemStack(Material.IRON_BOOTS));
         p.getInventory().setItem(0, new ItemStack(Material.DIAMOND_SWORD));
         p.updateInventory();
+        DisguiseAPI.undisguiseToAll(p);
+        for (Player pl : main.getServer().getOnlinePlayers())
+        {
+            pl.showPlayer(p);
+        }
         main.getServer().getScheduler().scheduleSyncDelayedTask(main, new Runnable()
         {
+            @Override
             public void run()
             {
                 p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0));
             }
         }, 1L);
+
+        for (Map.Entry<String, Location> entry : solidBlocks.entrySet())
+        {
+            Player block = main.getServer().getPlayer(UUID.fromString(entry.getKey()));
+            for (Player pl : main.getServer().getOnlinePlayers())
+            {
+                if (!pl.getUniqueId().toString().equals(block.getUniqueId().toString()))
+                {
+                    pl.sendBlockChange(entry.getValue(), Material.getMaterial(players.get(entry.getKey())), (byte) 0);
+                    pl.hidePlayer(block);
+                }
+            }
+        }
 
         seekerRespawnCountdowns.put(p.getUniqueId().toString(), seekerRespawnCountdown);
         seekerRespawnTasks.put(p.getUniqueId().toString(), main.getServer().getScheduler().scheduleSyncRepeatingTask(main, new Runnable()
@@ -295,16 +370,58 @@ public class Arena
         players.remove(p.getUniqueId().toString());
         seekers.remove(p.getUniqueId().toString());
         seekerRespawnCountdowns.remove(p.getUniqueId().toString());
+        if (seekerRespawnTasks.containsKey(p.getUniqueId().toString()))
+        {
+            main.getServer().getScheduler().cancelTask(seekerRespawnTasks.get(p.getUniqueId().toString()));
+        }
         seekerRespawnTasks.remove(p.getUniqueId().toString());
         sneakingCountdowns.remove(p.getUniqueId().toString());
+        if (sneakingTasks.containsKey(p.getUniqueId().toString()))
+        {
+            main.getServer().getScheduler().cancelTask(sneakingTasks.get(p.getUniqueId().toString()));
+        }
         sneakingTasks.remove(p.getUniqueId().toString());
         if (solidBlocks.containsKey(p.getUniqueId().toString()))
         {
             unsolid(p);
         }
+        p.setHealth(p.getMaxHealth());
+        p.setFoodLevel(20);
+        p.setExp(0);
+        p.setLevel(0);
+        p.getInventory().clear();
+        p.getInventory().setHelmet(null);
+        p.getInventory().setChestplate(null);
+        p.getInventory().setLeggings(null);
+        p.getInventory().setBoots(null);
+        p.updateInventory();
+        p.removePotionEffect(PotionEffectType.BLINDNESS);
+        p.setScoreboard(main.getServer().getScoreboardManager().getNewScoreboard());
+        DisguiseAPI.undisguiseToAll(p);
+        for (Player pl : main.getServer().getOnlinePlayers())
+        {
+            pl.showPlayer(p);
+        }
         p.teleport(spawnEnd);
 //        p.sendMessage("You left the arena " + name);
+        if (players.size() == 0 || players.size() < startPlayers)
+        {
+            state = 0;
+            main.getServer().getScheduler().cancelTask(countdownTask);
+            countdown = main.getConfig().getInt("Arena.Countdown");
+        }
+        updateSign();
         p.sendMessage(main.getMessages().get(8).replace("%name", name));
+
+        if (players.size() < 2)
+        {
+            resetArena();
+        } else if (seekers.size() == 0)
+        {
+            Player seek = main.getServer().getPlayer(UUID.fromString((String) players.keySet().toArray()[new Random().nextInt(players.size())]));
+            seek.teleport(spawnSeeker);
+            respawnSeeker(seek);
+        }
     }
 
     public void solid(Player p)
@@ -351,7 +468,7 @@ public class Arena
         } else if (state == 1)
         {
             sign.setLine(3, main.getConfig().getString("Arena.Sign.Countdown").replace("%seconds", String.valueOf(countdown)));
-        } else if (state == 2)
+        } else if (state == 2 || state == 3)
         {
             sign.setLine(3, main.getConfig().getString("Arena.Sign.GameRunning"));
         }
@@ -364,8 +481,13 @@ public class Arena
         for (String uuid : getPlayers().keySet())
         {
             Player p = main.getServer().getPlayer(UUID.fromString(uuid));
-//            p.sendMessage("The seekers won.");
-            p.sendMessage(main.getMessages().get(11));
+            if (players.size() == seekers.size())
+            {
+                p.sendMessage(main.getMessages().get(11));
+            } else
+            {
+                p.sendMessage(main.getMessages().get(46));
+            }
         }
         for (Player p : main.getServer().getOnlinePlayers())
         {
@@ -397,15 +519,20 @@ public class Arena
                     {
                         p.removePotionEffect(ef.getType());
                     }
-
+                    DisguiseAPI.undisguiseToAll(p);
+                    for (Player pl : main.getServer().getOnlinePlayers())
+                    {
+                        pl.showPlayer(p);
+                    }
                     p.teleport(spawnEnd);
                 }
 
                 players.clear();
                 seekers.clear();
-                countdown = 30;
-                seekerCountdown = 20;
-                seekerRespawnCountdown = 10;
+                secondsLeft = main.getConfig().getInt("Arena.GameTime");
+                countdown = main.getConfig().getInt("Arena.Countdown");
+                seekerCountdown = main.getConfig().getInt("Arena.SeekerCountdown");
+                seekerRespawnCountdown = main.getConfig().getInt("Arena.SeekerRespawnCountdown");
                 seekerRespawnCountdowns.clear();
                 seekerRespawnTasks.clear();
                 state = 0;

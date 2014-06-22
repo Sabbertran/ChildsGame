@@ -1,4 +1,4 @@
-package me.sabbertran.hideandseek;
+package me.sabbertran.childsgame;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,14 +12,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import me.sabbertran.hideandseek.commands.ArenaCommand;
-import me.sabbertran.hideandseek.commands.HideAndSeekCommand;
+import me.sabbertran.childsgame.commands.ArenaCommand;
+import me.sabbertran.childsgame.commands.LeaveCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class HideAndSeek extends JavaPlugin
+public class ChildsGame extends JavaPlugin
 {
 
     public static Logger log = Bukkit.getLogger();
@@ -33,22 +33,24 @@ public class HideAndSeek extends JavaPlugin
     {
         messages = new ArrayList<String>();
         arenas = new HashMap<String, Arena>();
-        messagesFile = new File("plugins/HideAndSeek/messages.yml");
+        messagesFile = new File("plugins/ChildsGame/messages.yml");
 
+        getConfig().addDefault("Name", "Child's Game");
         getConfig().addDefault("Arena.toolID", 369);
         getConfig().addDefault("Arena.BlockChooseItemAndInventoryName", "§bChoose block");
-        getConfig().addDefault("Arena.Sign.CreateIdentification", "HideAndSeek");
-        getConfig().addDefault("Arena.Sign.Name", "§c[HideAndSeek]");
+        getConfig().addDefault("Arena.Sign.CreateIdentification", "ChildsGame");
+        getConfig().addDefault("Arena.Sign.Name", "§cChild's Game");
         getConfig().addDefault("Arena.Sign.Waiting", "Waiting...");
         getConfig().addDefault("Arena.Sign.Countdown", "Countdown: %seconds s");
         getConfig().addDefault("Arena.Sign.GameRunning", "Game running");
+        getConfig().addDefault("Arena.GameTime", 300);
         getConfig().addDefault("Arena.Countdown", 30);
         getConfig().addDefault("Arena.SeekerCountdown", 20);
         getConfig().addDefault("Arena.SeekerRespawnCountdown", 10);
         getConfig().options().copyDefaults(true);
         saveConfig();
 
-        File arenaFolder = new File("plugins/HideAndSeek/arenas/");
+        File arenaFolder = new File("plugins/ChildsGame/arenas/");
         if (!arenaFolder.exists())
         {
             arenaFolder.mkdirs();
@@ -119,7 +121,7 @@ public class HideAndSeek extends JavaPlugin
                             {
                                 String[] b_split = b.split(":");
                                 bl.put(Integer.parseInt(b_split[0]), b_split[1]);
-                                
+
                             }
                         }
                     }
@@ -128,10 +130,10 @@ public class HideAndSeek extends JavaPlugin
                 arenas.put(name, a);
             } catch (FileNotFoundException ex)
             {
-                Logger.getLogger(HideAndSeek.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex)
             {
-                Logger.getLogger(HideAndSeek.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
@@ -150,25 +152,25 @@ public class HideAndSeek extends JavaPlugin
                 }
             } catch (FileNotFoundException ex)
             {
-                Logger.getLogger(HideAndSeek.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex)
             {
-                Logger.getLogger(HideAndSeek.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else
         {
             setupMessages();
         }
-        if (messages.size() != 46)
+        if (messages.size() != 47)
         {
             setupMessages();
 
         }
-        getCommand("hideandseek").setExecutor(new HideAndSeekCommand(this));
         getCommand("arena").setExecutor(new ArenaCommand(this));
+        getCommand("leave").setExecutor(new LeaveCommand(this));
         getServer().getPluginManager().registerEvents(new Events(this), this);
 
-        log.info("Hide and Seek enabled.");
+        log.info("Child's game enabled.");
     }
 
     @Override
@@ -178,7 +180,12 @@ public class HideAndSeek extends JavaPlugin
         {
             if (a.getLoc1() != null && a.getLoc2() != null && a.getSpawnHider() != null && a.getSpawnSeeker() != null && a.getSpawnWaiting() != null && a.getSpawnEnd() != null && a.getSign() != null)
             {
-                File f = new File("plugins/HideAndSeek/arenas/" + a.getName() + ".yml");
+                File folder = new File("plugins/ChildsGame/arenas");
+                for (File content : folder.listFiles())
+                {
+                    content.delete();
+                }
+                File f = new File("plugins/ChildsGame/arenas/" + a.getName() + ".yml");
                 if (f.exists())
                 {
                     f.delete();
@@ -211,15 +218,15 @@ public class HideAndSeek extends JavaPlugin
                     pw.close();
                 } catch (FileNotFoundException ex)
                 {
-                    Logger.getLogger(HideAndSeek.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex)
                 {
-                    Logger.getLogger(HideAndSeek.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
 
-        log.info("Hide and Seek disabled.");
+        log.info("Child's game disabled.");
     }
 
     public void setupMessages()
@@ -279,8 +286,9 @@ public class HideAndSeek extends JavaPlugin
         messages.add("Use /arena delete 'name' to delete an arena.");
         messages.add("There have to be no players in the arena.");
         messages.add("Successfully deleted the arena %name");
+        messages.add("The hiders won.");
 
-        //Currently 46 messages
+        //Currently 47 messages
         try
         {
             messagesFile.delete();
@@ -295,7 +303,7 @@ public class HideAndSeek extends JavaPlugin
             pw.close();
         } catch (IOException ex)
         {
-            Logger.getLogger(HideAndSeek.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

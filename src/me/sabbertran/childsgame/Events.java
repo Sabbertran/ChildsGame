@@ -1,4 +1,4 @@
-package me.sabbertran.hideandseek;
+package me.sabbertran.childsgame;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -34,9 +34,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class Events implements Listener
 {
 
-    private HideAndSeek main;
+    private ChildsGame main;
 
-    public Events(HideAndSeek has)
+    public Events(ChildsGame has)
     {
         this.main = has;
     }
@@ -48,7 +48,7 @@ public class Events implements Listener
 
         if ((ev.getItem() != null) && (ev.getItem().getItemMeta().getDisplayName() != null) && (ev.getItem().getType() == Material.getMaterial(main.getConfig().getInt("Arena.toolID"))) && (ev.getItem().getItemMeta().getDisplayName().startsWith("§6Arena tool - ")))
         {
-            if (p.hasPermission("hideandseek.admin.arena.tool"))
+            if (p.hasPermission("childsgame.admin.arena.tool"))
             {
                 String arena = ev.getItem().getItemMeta().getDisplayName().split(" ")[3];
                 if (main.getArenas().containsKey(arena))
@@ -83,14 +83,14 @@ public class Events implements Listener
                     item_5 = new ItemStack(Material.WOOL);
                     item_5.setDurability((short) 3);
                     meta_5 = item_5.getItemMeta();
-                    meta_5.setDisplayName("Set hiders spawn");
+                    meta_5.setDisplayName("Set hider spawn");
                     item_5.setItemMeta(meta_5);
                     inv.setItem(5, item_5);
 
                     item_6 = new ItemStack(Material.WOOL);
                     item_6.setDurability((short) 4);
                     meta_6 = item_6.getItemMeta();
-                    meta_6.setDisplayName("Set seekers spawn");
+                    meta_6.setDisplayName("Set seeker spawn");
                     item_6.setItemMeta(meta_6);
                     inv.setItem(6, item_6);
 
@@ -161,7 +161,7 @@ public class Events implements Listener
                 {
                     for (Map.Entry<String, Location> entry : a.getSolidBlocks().entrySet())
                     {
-                        if (entry.getValue().equals(ev.getClickedBlock().getLocation()))
+                        if (entry.getValue().equals(ev.getClickedBlock().getLocation()) && a.getSeekers().containsKey(p.getUniqueId().toString()))
                         {
                             Player hit = main.getServer().getPlayer(UUID.fromString(entry.getKey()));
                             a.unsolid(hit);
@@ -260,7 +260,7 @@ public class Events implements Listener
         Player p = ev.getPlayer();
         if (ev.getLine(0).equals(main.getConfig().getString("Arena.Sign.CreateIdentification")))
         {
-            if (p.hasPermission("hideandseek.admin.arena.sign"))
+            if (p.hasPermission("childsgame.admin.arena.sign"))
             {
                 if (main.getArenas().containsKey(ev.getLine(1)))
                 {
@@ -311,7 +311,7 @@ public class Events implements Listener
             Sign s = (Sign) ev.getClickedBlock().getState();
             if (s.getLine(0).equals(main.getConfig().getString("Arena.Sign.Name")))
             {
-                if (p.hasPermission("hideandseek.user.arena.join"))
+                if (p.hasPermission("childsgame.user.arena.join"))
                 {
                     Arena a = main.getArenas().get(s.getLine(1).substring(2, s.getLine(1).length()));
                     if (a.getState() == 0 || a.getState() == 1)
@@ -362,21 +362,27 @@ public class Events implements Listener
                     if ((a.getState() == 0 || a.getState() == 1) && victim.getUniqueId().toString().equals(uuid))
                     {
                         ev.setCancelled(true);
+                        return;
                     } else if (a.getState() == 2 && a.getSeekerCountdown() >= 0 && a.getSeekers().containsKey(damager.getUniqueId().toString()))
                     {
                         ev.setCancelled(true);
+                        return;
                     } else if (a.getState() == 2 && a.getSeekerCountdown() >= 0 && a.getSeekers().containsKey(victim.getUniqueId().toString()))
                     {
                         ev.setCancelled(true);
+                        return;
                     } else if (a.getState() == 2 && !a.getSeekers().containsKey(damager.getUniqueId().toString()) && !a.getSeekers().containsKey(victim.getUniqueId().toString()))
                     {
                         ev.setCancelled(true);
+                        return;
                     } else if (a.getState() == 2 && a.getSeekers().containsKey(damager.getUniqueId().toString()) && a.getSeekers().containsKey(victim.getUniqueId().toString()))
                     {
                         ev.setCancelled(true);
-                    } else if (a.getStartPlayers() == 3)
+                        return;
+                    } else if (a.getState() == 3)
                     {
                         ev.setCancelled(true);
+                        return;
                     }
                 }
 
@@ -592,12 +598,17 @@ public class Events implements Listener
             {
                 ev.setCancelled(true);
                 return;
+            } else if (a.getSign() != null && a.getSign().getLocation() == ev.getBlock().getLocation())
+            {
+                a.setSign(null);
+                return;
             }
         }
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent ev)
+    public void onPlayerQuit(PlayerQuitEvent ev
+    )
     {
         Player p = ev.getPlayer();
         for (Arena a : main.getArenas().values())
