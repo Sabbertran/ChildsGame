@@ -38,9 +38,9 @@ public class ChildsGame extends JavaPlugin
 
         getConfig().addDefault("Name", "Child's Game");
         getConfig().addDefault("Arena.toolID", 369);
-        getConfig().addDefault("Arena.BlockChooseItemAndInventoryName", ChatColor.AQUA + "Choose block");
+        getConfig().addDefault("Arena.BlockChooseItemAndInventoryName", ChatColor.AQUA + "Choose Block");
         getConfig().addDefault("Arena.Sign.CreateIdentification", "ChildsGame");
-        getConfig().addDefault("Arena.Sign.Name", ChatColor.RED + "cChild's Game");
+        getConfig().addDefault("Arena.Sign.Name", ChatColor.RED + "Child's Game");
         getConfig().addDefault("Arena.Sign.Waiting", "Waiting...");
         getConfig().addDefault("Arena.Sign.Countdown", "Countdown: %seconds s");
         getConfig().addDefault("Arena.Sign.GameRunning", "Game running");
@@ -127,8 +127,11 @@ public class ChildsGame extends JavaPlugin
                         }
                     }
                     
-                    reader.close();
                 }
+                
+                // Close the reader
+                reader.close();
+                
                 Arena a = new Arena(this, name, loc1, loc2, spawnHider, spawnSeeker, spawnWaiting, spawnEnd, sign, maxPlayers, startPlayers, bl);
                 arenas.put(name, a);
             } catch (FileNotFoundException ex)
