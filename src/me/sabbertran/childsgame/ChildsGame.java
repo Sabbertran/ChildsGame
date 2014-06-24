@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import me.sabbertran.childsgame.commands.ArenaCommand;
 import me.sabbertran.childsgame.commands.LeaveCommand;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,9 +38,9 @@ public class ChildsGame extends JavaPlugin
 
         getConfig().addDefault("Name", "Child's Game");
         getConfig().addDefault("Arena.toolID", 369);
-        getConfig().addDefault("Arena.BlockChooseItemAndInventoryName", "§bChoose block");
+        getConfig().addDefault("Arena.BlockChooseItemAndInventoryName", ChatColor.AQUA + "Choose Block");
         getConfig().addDefault("Arena.Sign.CreateIdentification", "ChildsGame");
-        getConfig().addDefault("Arena.Sign.Name", "§cChild's Game");
+        getConfig().addDefault("Arena.Sign.Name", ChatColor.RED + "Child's Game");
         getConfig().addDefault("Arena.Sign.Waiting", "Waiting...");
         getConfig().addDefault("Arena.Sign.Countdown", "Countdown: %seconds s");
         getConfig().addDefault("Arena.Sign.GameRunning", "Game running");
@@ -72,60 +73,65 @@ public class ChildsGame extends JavaPlugin
                     if (!line.startsWith("#"))
                     {
                         String[] split = line.split(": ");
-                        if (split[0].equals("name"))
+                        if (split.length > 1)
                         {
-                            name = split[1];
-                        } else if (split[0].equals("loc1"))
-                        {
-                            String[] loc = split[1].split(",");
-                            loc1 = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
-                        } else if (split[0].equals("loc2"))
-                        {
-                            String[] loc = split[1].split(",");
-                            loc2 = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
-                        } else if (split[0].equals("spawnHider"))
-                        {
-                            String[] loc = split[1].split(",");
-                            spawnHider = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
-                        } else if (split[0].equals("spawnSeeker"))
-                        {
-                            String[] loc = split[1].split(",");
-                            spawnSeeker = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
-                        } else if (split[0].equals("spawnWaiting"))
-                        {
-                            String[] loc = split[1].split(",");
-                            spawnWaiting = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
-                        } else if (split[0].equals("spawnEnd"))
-                        {
-                            String[] loc = split[1].split(",");
-                            spawnEnd = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
-                        } else if (split[0].equals("sign"))
-                        {
-                            String[] loc = split[1].split(",");
-                            Location l = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
-                            if (l.getBlock().getState() instanceof Sign)
+                            if (split[0].equals("name"))
                             {
-                                sign = (Sign) l.getBlock().getState();
-                            }
-                        } else if (split[0].equals("maxPlayers"))
-                        {
-                            maxPlayers = Integer.parseInt(split[1]);
-                        } else if (split[0].equals("startPlayers"))
-                        {
-                            startPlayers = Integer.parseInt(split[1]);
-                        } else if (split[0].equals("blocks"))
-                        {
-                            bl = new HashMap<Integer, String>();
-                            String[] block = split[1].split(";");
-                            for (String b : block)
+                                name = split[1];
+                            } else if (split[0].equals("loc1"))
                             {
-                                String[] b_split = b.split(":");
-                                bl.put(Integer.parseInt(b_split[0]), b_split[1]);
+                                String[] loc = split[1].split(",");
+                                loc1 = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
+                            } else if (split[0].equals("loc2"))
+                            {
+                                String[] loc = split[1].split(",");
+                                loc2 = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
+                            } else if (split[0].equals("spawnHider"))
+                            {
+                                String[] loc = split[1].split(",");
+                                spawnHider = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
+                            } else if (split[0].equals("spawnSeeker"))
+                            {
+                                String[] loc = split[1].split(",");
+                                spawnSeeker = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
+                            } else if (split[0].equals("spawnWaiting"))
+                            {
+                                String[] loc = split[1].split(",");
+                                spawnWaiting = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
+                            } else if (split[0].equals("spawnEnd"))
+                            {
+                                String[] loc = split[1].split(",");
+                                spawnEnd = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
+                            } else if (split[0].equals("sign"))
+                            {
+                                String[] loc = split[1].split(",");
+                                Location l = new Location(getServer().getWorld(loc[0]), Integer.parseInt(loc[1]), Integer.parseInt(loc[2]), Integer.parseInt(loc[3]));
+                                if (l.getBlock().getState() instanceof Sign)
+                                {
+                                    sign = (Sign) l.getBlock().getState();
+                                }
+                            } else if (split[0].equals("maxPlayers"))
+                            {
+                                maxPlayers = Integer.parseInt(split[1]);
+                            } else if (split[0].equals("startPlayers"))
+                            {
+                                startPlayers = Integer.parseInt(split[1]);
+                            } else if (split[0].equals("blocks"))
+                            {
+                                bl = new HashMap<Integer, String>();
+                                String[] block = split[1].split(";");
+                                for (String b : block)
+                                {
+                                    String[] b_split = b.split(":");
+                                    bl.put(Integer.parseInt(b_split[0]), b_split[1]);
 
+                                }
                             }
                         }
                     }
                 }
+                reader.close();
+                
                 Arena a = new Arena(this, name, loc1, loc2, spawnHider, spawnSeeker, spawnWaiting, spawnEnd, sign, maxPlayers, startPlayers, bl);
                 arenas.put(name, a);
             } catch (FileNotFoundException ex)
@@ -150,6 +156,7 @@ public class ChildsGame extends JavaPlugin
                         messages.add(line);
                     }
                 }
+                read.close();
             } catch (FileNotFoundException ex)
             {
                 Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
@@ -168,6 +175,9 @@ public class ChildsGame extends JavaPlugin
         }
         getCommand("arena").setExecutor(new ArenaCommand(this));
         getCommand("leave").setExecutor(new LeaveCommand(this));
+        //Alternative commands to work around conflicts
+        getCommand("cgarena").setExecutor(new ArenaCommand(this));
+        getCommand("cgleave").setExecutor(new LeaveCommand(this));
         getServer().getPluginManager().registerEvents(new Events(this), this);
 
         log.info("Child's game enabled.");
@@ -176,35 +186,75 @@ public class ChildsGame extends JavaPlugin
     @Override
     public void onDisable()
     {
+        File folder = new File("plugins/ChildsGame/arenas");
+        for (File content : folder.listFiles())
+        {
+            content.delete();
+        }
+
         for (Arena a : arenas.values())
         {
-            if (a.getLoc1() != null && a.getLoc2() != null && a.getSpawnHider() != null && a.getSpawnSeeker() != null && a.getSpawnWaiting() != null && a.getSpawnEnd() != null && a.getSign() != null)
+            File f = new File("plugins/ChildsGame/arenas/" + a.getName() + ".yml");
+            try
             {
-                File folder = new File("plugins/ChildsGame/arenas");
-                for (File content : folder.listFiles())
+                f.createNewFile();
+                PrintWriter pw = new PrintWriter(new FileOutputStream(f));
+
+                pw.print("name: ");
+                if (a.getName() != null)
                 {
-                    content.delete();
+                    pw.println(a.getName());
                 }
-                File f = new File("plugins/ChildsGame/arenas/" + a.getName() + ".yml");
-                if (f.exists())
+                pw.print("loc1: ");
+                if (a.getLoc1() != null)
                 {
-                    f.delete();
+                    pw.println(a.getLoc1().getWorld().getName() + "," + a.getLoc1().getBlockX() + "," + a.getLoc1().getBlockY() + "," + a.getLoc1().getBlockZ());
                 }
-                try
+                pw.print("loc2: ");
+                if (a.getLoc2() != null)
                 {
-                    f.createNewFile();
-                    PrintWriter pw = new PrintWriter(new FileOutputStream(f));
-                    pw.println("name: " + a.getName());
-                    pw.println("loc1: " + a.getLoc1().getWorld().getName() + "," + a.getLoc1().getBlockX() + "," + a.getLoc1().getBlockY() + "," + a.getLoc1().getBlockZ());
-                    pw.println("loc2: " + a.getLoc2().getWorld().getName() + "," + a.getLoc2().getBlockX() + "," + a.getLoc2().getBlockY() + "," + a.getLoc2().getBlockZ());
-                    pw.println("spawnHider: " + a.getSpawnHider().getWorld().getName() + "," + a.getSpawnHider().getBlockX() + "," + a.getSpawnHider().getBlockY() + "," + a.getSpawnHider().getBlockZ());
-                    pw.println("spawnSeeker: " + a.getSpawnSeeker().getWorld().getName() + "," + a.getSpawnSeeker().getBlockX() + "," + a.getSpawnSeeker().getBlockY() + "," + a.getSpawnSeeker().getBlockZ());
-                    pw.println("spawnWaiting: " + a.getSpawnWaiting().getWorld().getName() + "," + a.getSpawnWaiting().getBlockX() + "," + a.getSpawnWaiting().getBlockY() + "," + a.getSpawnWaiting().getBlockZ());
-                    pw.println("spawnEnd: " + a.getSpawnEnd().getWorld().getName() + "," + a.getSpawnEnd().getBlockX() + "," + a.getSpawnEnd().getBlockY() + "," + a.getSpawnEnd().getBlockZ());
-                    pw.println("sign: " + a.getSign().getWorld().getName() + "," + a.getSign().getX() + "," + a.getSign().getY() + "," + a.getSign().getZ());
-                    pw.println("maxPlayers: " + a.getMaxPlayers());
-                    pw.println("startPlayers: " + a.getStartPlayers());
-                    String blocks = "blocks: ";
+                    pw.println(a.getLoc2().getWorld().getName() + "," + a.getLoc2().getBlockX() + "," + a.getLoc2().getBlockY() + "," + a.getLoc2().getBlockZ());
+                }
+                pw.print("spawnHider: ");
+                if (a.getSpawnHider() != null)
+                {
+                    pw.println(a.getSpawnHider().getWorld().getName() + "," + a.getSpawnHider().getBlockX() + "," + a.getSpawnHider().getBlockY() + "," + a.getSpawnHider().getBlockZ());
+                }
+                pw.print("spawnSeeker: ");
+                if (a.getSpawnSeeker() != null)
+                {
+                    pw.println(a.getSpawnSeeker().getWorld().getName() + "," + a.getSpawnSeeker().getBlockX() + "," + a.getSpawnSeeker().getBlockY() + "," + a.getSpawnSeeker().getBlockZ());
+                }
+                pw.print("spawnWaiting: ");
+                if (a.getSpawnWaiting() != null)
+                {
+                    pw.println(a.getSpawnWaiting().getWorld().getName() + "," + a.getSpawnWaiting().getBlockX() + "," + a.getSpawnWaiting().getBlockY() + "," + a.getSpawnWaiting().getBlockZ());
+                }
+                pw.print("spawnEnd: ");
+                if (a.getSpawnEnd() != null)
+                {
+                    pw.println(a.getSpawnEnd().getWorld().getName() + "," + a.getSpawnEnd().getBlockX() + "," + a.getSpawnEnd().getBlockY() + "," + a.getSpawnEnd().getBlockZ());
+                }
+                pw.print("sign: ");
+                if (a.getSign() != null)
+                {
+                    pw.println(a.getSign().getWorld().getName() + "," + a.getSign().getX() + "," + a.getSign().getY() + "," + a.getSign().getZ());
+                }
+                pw.print("maxPlayers: ");
+                if (a.getMaxPlayers() != 0)
+                {
+                    pw.println(a.getMaxPlayers());
+                }
+                pw.print("startPlayers: ");
+                if (a.getStartPlayers() != 0)
+                {
+                    pw.println(a.getStartPlayers());
+                }
+                pw.print("blocks: ");
+                System.out.println(a.getBlocks() == null);
+                if (a.getBlocks() != null)
+                {
+                    String blocks = "";
                     for (Map.Entry<Integer, String> entry : a.getBlocks().entrySet())
                     {
                         String b = entry.getKey() + ":" + entry.getValue();
@@ -215,14 +265,14 @@ public class ChildsGame extends JavaPlugin
                         blocks = blocks.substring(0, blocks.length() - 1);
                     }
                     pw.println(blocks);
-                    pw.close();
-                } catch (FileNotFoundException ex)
-                {
-                    Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex)
-                {
-                    Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                pw.close();
+            } catch (FileNotFoundException ex)
+            {
+                Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex)
+            {
+                Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 

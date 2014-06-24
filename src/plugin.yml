@@ -1,21 +1,23 @@
 name: ChildsGame
 main: me.sabbertran.childsgame.ChildsGame
-version: 1.0
+version: 1.0.1
 website: http://www.sabbertran.tk/
 author: Sabbertran
 description: ChildsGame Plugin
 depend: [ProtocolLib, LibsDisguises]
 commands:
-  hideandseek:
-    description: HideAndSeek Command
-    usage: "/hideandseek"
-    aliases: [has]
   arena:
-    description: HideAndSeek Arena Command
+    description: Child's Game Arena Command
     usage: "/arena"
   leave:
-    description: HideAndSeek Leave Command
+    description: Child's Game Leave Command
     usage: "/leave"
+  cgarena:
+    description: Child's Game Arena Command Alias
+    usage: "/cgarena"
+  cgleave:
+    description: Child's Game Leave Command alias
+    usage: "/cgleave"
 permissions:
    childsgame.user.arena.join:
      description: Allows the player to join an arena

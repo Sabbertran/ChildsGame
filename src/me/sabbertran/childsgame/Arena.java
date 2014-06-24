@@ -84,7 +84,13 @@ public class Arena
         this.sign = sign;
         this.maxPlayers = maxPlayers;
         this.startPlayers = startPlayers;
-        this.blocks = bl;
+        if (bl != null)
+        {
+            this.blocks = bl;
+        } else
+        {
+            this.blocks = new HashMap<Integer, String>();
+        }
 
         this.players = new HashMap<String, Integer>();
         this.seekers = new HashMap<String, Boolean>();
@@ -99,6 +105,8 @@ public class Arena
         this.seekerRespawnCountdown = main.getConfig().getInt("Arena.SeekerRespawnCountdown");
         this.seekerRespawnCountdowns = new HashMap<String, Integer>();
         this.seekerRespawnTasks = new HashMap<String, Integer>();
+
+        updateSign();
     }
 
     public void join(Player p)
@@ -459,8 +467,12 @@ public class Arena
 
     public void updateSign()
     {
+        if (sign == null)
+        {
+            return;
+        }
         sign.setLine(0, main.getConfig().getString("Arena.Sign.Name"));
-        sign.setLine(1, "§b" + name);
+        sign.setLine(1, ChatColor.AQUA + name);
         sign.setLine(2, players.size() + "/" + maxPlayers);
         if (state == 0)
         {
