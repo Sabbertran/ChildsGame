@@ -126,6 +126,8 @@ public class ChildsGame extends JavaPlugin
                             }
                         }
                     }
+                    
+                    reader.close();
                 }
                 Arena a = new Arena(this, name, loc1, loc2, spawnHider, spawnSeeker, spawnWaiting, spawnEnd, sign, maxPlayers, startPlayers, bl);
                 arenas.put(name, a);
@@ -151,6 +153,9 @@ public class ChildsGame extends JavaPlugin
                         messages.add(line);
                     }
                 }
+                
+                read.close();
+                
             } catch (FileNotFoundException ex)
             {
                 Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
