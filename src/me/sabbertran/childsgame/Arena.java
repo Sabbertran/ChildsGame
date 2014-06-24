@@ -460,7 +460,7 @@ public class Arena
     public void updateSign()
     {
         sign.setLine(0, main.getConfig().getString("Arena.Sign.Name"));
-        sign.setLine(1, "§b" + name);
+        sign.setLine(1, ChatColor.AQUA + name);
         sign.setLine(2, players.size() + "/" + maxPlayers);
         if (state == 0)
         {
