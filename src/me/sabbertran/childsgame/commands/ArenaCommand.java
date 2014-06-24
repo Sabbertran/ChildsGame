@@ -2,6 +2,8 @@ package me.sabbertran.childsgame.commands;
 
 import me.sabbertran.childsgame.Arena;
 import me.sabbertran.childsgame.ChildsGame;
+
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -83,7 +85,7 @@ public class ArenaCommand implements CommandExecutor
                             {
                                 ItemStack item = new ItemStack(Material.BLAZE_ROD);
                                 ItemMeta meta = item.getItemMeta();
-                                meta.setDisplayName("§6Arena tool - " + args[1]);
+                                meta.setDisplayName(ChatColor.GOLD + "Arena tool - " + args[1]);
                                 item.setItemMeta(meta);
                                 p.getInventory().addItem(item);
 //                            p.sendMessage("Use this item to modify the arena.");
