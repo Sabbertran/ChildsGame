@@ -6,6 +6,8 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers.EntityUseAction;
 import java.util.Map;
 import java.util.UUID;
+
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -46,7 +48,7 @@ public class Events implements Listener
     {
         Player p = ev.getPlayer();
 
-        if ((ev.getItem() != null) && (ev.getItem().getItemMeta().getDisplayName() != null) && (ev.getItem().getType() == Material.getMaterial(main.getConfig().getInt("Arena.toolID"))) && (ev.getItem().getItemMeta().getDisplayName().startsWith("§6Arena tool - ")))
+        if ((ev.getItem() != null) && (ev.getItem().getItemMeta().getDisplayName() != null) && (ev.getItem().getType() == Material.getMaterial(main.getConfig().getInt("Arena.toolID"))) && (ev.getItem().getItemMeta().getDisplayName().startsWith(ChatColor.GOLD+ "Arena tool - ")))
         {
             if (p.hasPermission("childsgame.admin.arena.tool"))
             {
@@ -108,7 +110,7 @@ public class Events implements Listener
                     p.sendMessage(main.getMessages().get(12).replace("%name", arena));
                 }
             }
-        } else if ((ev.getItem() != null) && (ev.getItem().getItemMeta().getDisplayName() != null) && (ev.getItem().getType() == Material.BOOK) && (ev.getItem().getItemMeta().getDisplayName().equals("§bChoose block")))
+        } else if ((ev.getItem() != null) && (ev.getItem().getItemMeta().getDisplayName() != null) && (ev.getItem().getType() == Material.BOOK) && (ev.getItem().getItemMeta().getDisplayName().equals(main.getConfig().getString("Arena.BlockChooseItemAndInventoryName"))))
         {
             for (Arena a : main.getArenas().values())
             {
@@ -188,7 +190,7 @@ public class Events implements Listener
     public void onInventoryClick(InventoryClickEvent ev)
     {
         Player p = (Player) ev.getWhoClicked();
-        if (ev.getInventory().getName().startsWith("§6Arena tool - "))
+        if (ev.getInventory().getName().startsWith(ChatColor.GOLD + "Arena tool - "))
         {
             String arena = ev.getInventory().getName().split(" ")[3];
             if (ev.getCurrentItem() != null)
@@ -273,7 +275,7 @@ public class Events implements Listener
                             a.setSign(s);
 
                             ev.setLine(0, main.getConfig().getString("Arena.Sign.Name"));
-                            ev.setLine(1, "§b" + a.getName());
+                            ev.setLine(1, ChatColor.AQUA + a.getName());
                             ev.setLine(2, a.getPlayers().size() + "/" + a.getMaxPlayers());
                             ev.setLine(3, main.getConfig().getString("Arena.Sign.Waiting"));
                             return;

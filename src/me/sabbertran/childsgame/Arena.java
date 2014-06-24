@@ -99,6 +99,9 @@ public class Arena
         this.seekerRespawnCountdown = main.getConfig().getInt("Arena.SeekerRespawnCountdown");
         this.seekerRespawnCountdowns = new HashMap<String, Integer>();
         this.seekerRespawnTasks = new HashMap<String, Integer>();
+        
+        // Because on reload, it will keep the same details - so update the sign
+        updateSign();
     }
 
     public void join(Player p)
@@ -459,8 +462,10 @@ public class Arena
 
     public void updateSign()
     {
+    	if(sign == null) return;
+    	
         sign.setLine(0, main.getConfig().getString("Arena.Sign.Name"));
-        sign.setLine(1, "§b" + name);
+        sign.setLine(1, ChatColor.AQUA + name);
         sign.setLine(2, players.size() + "/" + maxPlayers);
         if (state == 0)
         {

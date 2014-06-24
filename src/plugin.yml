@@ -13,9 +13,15 @@ commands:
   arena:
     description: HideAndSeek Arena Command
     usage: "/arena"
+  hsarena:
+    description: Alias for HideAndSeek Arena Command
+    usage: "/hsarena"
   leave:
     description: HideAndSeek Leave Command
     usage: "/leave"
+  hsleave:
+    description: Alias for HideAndSeek Leave Command
+    usage: "/hsleave"
 permissions:
    childsgame.user.arena.join:
      description: Allows the player to join an arena

@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import me.sabbertran.childsgame.commands.ArenaCommand;
 import me.sabbertran.childsgame.commands.LeaveCommand;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,9 +38,9 @@ public class ChildsGame extends JavaPlugin
 
         getConfig().addDefault("Name", "Child's Game");
         getConfig().addDefault("Arena.toolID", 369);
-        getConfig().addDefault("Arena.BlockChooseItemAndInventoryName", "§bChoose block");
+        getConfig().addDefault("Arena.BlockChooseItemAndInventoryName", ChatColor.AQUA + "Choose Block");
         getConfig().addDefault("Arena.Sign.CreateIdentification", "ChildsGame");
-        getConfig().addDefault("Arena.Sign.Name", "§cChild's Game");
+        getConfig().addDefault("Arena.Sign.Name", ChatColor.RED + "Child's Game");
         getConfig().addDefault("Arena.Sign.Waiting", "Waiting...");
         getConfig().addDefault("Arena.Sign.Countdown", "Countdown: %seconds s");
         getConfig().addDefault("Arena.Sign.GameRunning", "Game running");
@@ -125,7 +126,12 @@ public class ChildsGame extends JavaPlugin
                             }
                         }
                     }
+                    
                 }
+                
+                // Close the reader
+                reader.close();
+                
                 Arena a = new Arena(this, name, loc1, loc2, spawnHider, spawnSeeker, spawnWaiting, spawnEnd, sign, maxPlayers, startPlayers, bl);
                 arenas.put(name, a);
             } catch (FileNotFoundException ex)
@@ -150,6 +156,9 @@ public class ChildsGame extends JavaPlugin
                         messages.add(line);
                     }
                 }
+                
+                read.close();
+                
             } catch (FileNotFoundException ex)
             {
                 Logger.getLogger(ChildsGame.class.getName()).log(Level.SEVERE, null, ex);
@@ -167,7 +176,10 @@ public class ChildsGame extends JavaPlugin
 
         }
         getCommand("arena").setExecutor(new ArenaCommand(this));
+        getCommand("hsarena").setExecutor(new ArenaCommand(this));
         getCommand("leave").setExecutor(new LeaveCommand(this));
+        getCommand("hsleave").setExecutor(new LeaveCommand(this));
+        
         getServer().getPluginManager().registerEvents(new Events(this), this);
 
         log.info("Child's game enabled.");
