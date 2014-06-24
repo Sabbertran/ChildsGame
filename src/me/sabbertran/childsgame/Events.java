@@ -110,7 +110,7 @@ public class Events implements Listener
                     p.sendMessage(main.getMessages().get(12).replace("%name", arena));
                 }
             }
-        } else if ((ev.getItem() != null) && (ev.getItem().getItemMeta().getDisplayName() != null) && (ev.getItem().getType() == Material.BOOK) && (ev.getItem().getItemMeta().getDisplayName().equals(ChatColor.GOLD + "Choose block")))
+        } else if ((ev.getItem() != null) && (ev.getItem().getItemMeta().getDisplayName() != null) && (ev.getItem().getType() == Material.BOOK) && (ev.getItem().getItemMeta().getDisplayName().equals(main.getConfig().getString("Arena.BlockChooseItemAndInventoryName"))))
         {
             for (Arena a : main.getArenas().values())
             {
