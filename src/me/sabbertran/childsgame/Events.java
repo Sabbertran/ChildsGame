@@ -13,6 +13,7 @@ import org.bukkit.Sound;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -141,10 +142,9 @@ public class Events implements Listener
                     }
                     Inventory inv = main.getServer().createInventory(p, size, main.getConfig().getString("Arena.BlockChooseItemAndInventoryName"));
                     int i = 0;
-                    for (Map.Entry<Integer, String> entry : a.getBlocks().entrySet())
+                    for (Map.Entry<ItemStack, String> entry : a.getBlocks().entrySet())
                     {
-                        int block = entry.getKey();
-                        ItemStack is = new ItemStack(Material.getMaterial(block));
+                        ItemStack is = entry.getKey();
                         ItemMeta im = is.getItemMeta();
                         im.setDisplayName(entry.getValue());
                         is.setItemMeta(im);
@@ -234,13 +234,13 @@ public class Events implements Listener
             {
                 if (a.getPlayers().containsKey(p.getUniqueId().toString()))
                 {
-                    if (a.getBlocks().containsKey(ev.getCurrentItem().getTypeId()))
+                    if (a.containsBlock(ev.getCurrentItem().getTypeId()))
                     {
-                        a.getPlayers().put(p.getUniqueId().toString(), ev.getCurrentItem().getTypeId());
+                        a.getPlayers().put(p.getUniqueId().toString(), ev.getCurrentItem());
                         ev.setCancelled(true);
                         p.closeInventory();
 //                        p.sendMessage("You will be a " + a.getBlocks().get(ev.getCurrentItem().getTypeId()) + ".");
-                        p.sendMessage(main.getMessages().get(20).replace("%block", a.getBlocks().get(ev.getCurrentItem().getTypeId())));
+                        p.sendMessage(main.getMessages().get(20).replace("%block", a.getBlockName(ev.getCurrentItem().getTypeId())));
                     }
                 }
             }
@@ -266,7 +266,7 @@ public class Events implements Listener
                 if (main.getArenas().containsKey(ev.getLine(1)))
                 {
                     Arena a = main.getArenas().get(ev.getLine(1));
-                    if (a.getLoc1() != null && a.getLoc2() != null && a.getSpawnEnd() != null && a.getSpawnHider() != null && a.getSpawnSeeker() != null && a.getSpawnWaiting() != null && a.getBlocks() != null)
+                    if (a.getLoc1() != null && a.getLoc2() != null && a.getSpawnEnd() != null && a.getSpawnHider() != null && a.getSpawnSeeker() != null && a.getSpawnWaiting() != null && !a.getBlocks().isEmpty())
                     {
                         if (a.getSign() == null)
                         {
@@ -324,7 +324,7 @@ public class Events implements Listener
                                 a.join(p);
                             } else
                             {
-//                            p.sendMessage("You can't join the game you are already in.");
+//                            p.sendMessage("You can't join the game already in.");
                                 p.sendMessage(main.getMessages().get(22));
                                 return;
                             }
@@ -417,6 +417,7 @@ public class Events implements Listener
                     {
                         main.getServer().getScheduler().cancelTask(a.getSneakingTasks().get(p.getUniqueId().toString()));
                         a.getSneakingTasks().remove(p.getUniqueId().toString());
+                        a.getSneakingCountdowns().remove(p.getUniqueId().toString());
                         p.setLevel(0);
                         p.setExp(0);
                         return;
@@ -454,22 +455,30 @@ public class Events implements Listener
         Player killer = ev.getEntity().getKiller();
         for (Arena a : main.getArenas().values())
         {
-            if (a.getPlayers().containsKey(dead.getUniqueId().toString()) && !a.getSeekers().containsKey(dead.getUniqueId().toString()))
+            if ((a.getState() == 2 || a.getState() == 3) && a.getPlayers().containsKey(dead.getUniqueId().toString()) && !a.getSeekers().containsKey(dead.getUniqueId().toString()))
             {
                 ev.setDeathMessage(null);
                 for (String uuid : a.getPlayers().keySet())
                 {
                     Player p = main.getServer().getPlayer(UUID.fromString(uuid));
 //                    p.sendMessage("Hider " + dead.getName() + " (" + a.getBlocks().get(a.getPlayers().get(dead.getUniqueId().toString())) + ") was slain by " + killer.getName());
-                    p.sendMessage(main.getMessages().get(25).replace("%hider", dead.getName()).replace("%block", a.getBlocks().get(a.getPlayers().get(dead.getUniqueId().toString()))).replace("%seeker", killer.getName()));
+                    p.sendMessage(main.getMessages().get(25).replace("%hider", dead.getName()).replace("%block", a.getBlockName(a.getPlayers().get(dead.getUniqueId().toString()).getTypeId())).replace("%seeker", killer.getName()));
                 }
                 ev.setDroppedExp(0);
                 ev.getDrops().clear();
-                a.getSeekers().put(dead.getUniqueId().toString(), true);
-
-                if (a.getSeekers().size() == a.getPlayers().size() && a.getState() != 3)
+                for (String cmd : main.getKillCommands())
                 {
+                    main.getServer().dispatchCommand(main.getServer().getConsoleSender(), cmd.replace("%player", killer.getName()).replace("%killed", dead.getName()));
+                }
+
+                if (a.getSeekers().size() + 1 == a.getPlayers().size() && a.getState() != 3)
+                {
+                    a.getSeekers().put(dead.getUniqueId().toString(), true);
+                    a.getNoWinCmds().add(dead.getUniqueId().toString());
                     a.resetArena();
+                } else
+                {
+                    a.getSeekers().put(dead.getUniqueId().toString(), true);
                 }
                 return;
             } else if (a.getPlayers().containsKey(dead.getUniqueId().toString()) && a.getSeekers().containsKey(dead.getUniqueId().toString()))
@@ -479,7 +488,7 @@ public class Events implements Listener
                 {
                     Player p = main.getServer().getPlayer(UUID.fromString(uuid));
 //                    p.sendMessage("Seeker " + dead.getName() + " was slain by " + killer.getName() + " (" + a.getBlocks().get(a.getPlayers().get(killer.getUniqueId().toString())) + ")");
-                    p.sendMessage(main.getMessages().get(26).replace("%seeker", dead.getName()).replace("%hider", killer.getName()).replace("%block", a.getBlocks().get(a.getPlayers().get(killer.getUniqueId().toString()))));
+                    p.sendMessage(main.getMessages().get(26).replace("%seeker", dead.getName()).replace("%hider", killer.getName()).replace("%block", a.getBlockName(a.getPlayers().get(dead.getUniqueId().toString()).getTypeId())));
                 }
                 ev.setDroppedExp(0);
                 ev.getDrops().clear();
@@ -488,7 +497,7 @@ public class Events implements Listener
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onRespawn(PlayerRespawnEvent ev)
     {
         Player p = ev.getPlayer();
@@ -524,9 +533,10 @@ public class Events implements Listener
     public void onPlayerSneak(PlayerToggleSneakEvent ev)
     {
         final Player p = ev.getPlayer();
+
         for (final Arena a : main.getArenas().values())
         {
-            if (a.getState() == 2 && a.getPlayers().containsKey(p.getUniqueId().toString()) && !a.getSeekers().containsKey(p.getUniqueId().toString()))
+            if (a.getState() == 2 && a.getPlayers().containsKey(p.getUniqueId().toString()) && !a.getSeekers().containsKey(p.getUniqueId().toString()) && !a.getSneakingCountdowns().containsKey(p.getUniqueId().toString()))
             {
                 if (p.isSneaking())
                 {
@@ -542,27 +552,29 @@ public class Events implements Listener
                     p.setLevel(0);
                     p.setExp(1f);
                     a.getSneakingCountdowns().put(p.getUniqueId().toString(), a.getSneakingCountdown());
-                    a.getSneakingTasks().put(p.getUniqueId().toString(), main.getServer().getScheduler().scheduleSyncRepeatingTask(main, new Runnable()
+                    int id = main.getServer().getScheduler().scheduleSyncRepeatingTask(main, new Runnable()
                     {
                         @Override
                         public void run()
                         {
-                            if (a.getSneakingCountdowns().get(p.getUniqueId().toString()) == 0)
+                            int cd = a.getSneakingCountdowns().get(p.getUniqueId().toString());
+                            if (cd == 0)
                             {
                                 p.setExp(0);
                                 a.solid(p);
-                                int temp = a.getSneakingTasks().get(p.getUniqueId().toString());
+                                int id = a.getSneakingTasks().get(p.getUniqueId().toString());
+                                main.getServer().getScheduler().cancelTask(id);
                                 a.getSneakingTasks().remove(p.getUniqueId().toString());
-                                main.getServer().getScheduler().cancelTask(temp);
-                            } else if ((a.getSneakingCountdowns().get(p.getUniqueId().toString()) % 10 == 0) || a.getSneakingCountdowns().get(p.getUniqueId().toString()) <= 5)
+                            } else
                             {
                                 p.setExp((a.getSneakingCountdowns().get(p.getUniqueId().toString()) * 0.2f) - 0.2f);
                             }
 
-                            a.getSneakingCountdowns().put(p.getUniqueId().toString(), a.getSneakingCountdowns().get(p.getUniqueId().toString()) - 1);
-                            return;
+                            a.getSneakingCountdowns().put(p.getUniqueId().toString(), cd - 1);
                         }
-                    }, 20L, 20L));
+                    }, 20L, 20L);
+                    a.getSneakingTasks().put(p.getUniqueId().toString(), id);
+                    return;
                 }
             }
         }
@@ -608,8 +620,7 @@ public class Events implements Listener
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent ev
-    )
+    public void onPlayerQuit(PlayerQuitEvent ev)
     {
         Player p = ev.getPlayer();
         for (Arena a : main.getArenas().values())
@@ -621,4 +632,5 @@ public class Events implements Listener
             }
         }
     }
+
 }

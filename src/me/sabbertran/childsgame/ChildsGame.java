@@ -17,7 +17,9 @@ import me.sabbertran.childsgame.commands.LeaveCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Sign;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ChildsGame extends JavaPlugin
@@ -28,6 +30,7 @@ public class ChildsGame extends JavaPlugin
 
     private ArrayList<String> messages;
     private HashMap<String, Arena> arenas;
+    private ArrayList<String> seekerWinCommands, killCommands;
 
     @Override
     public void onEnable()
@@ -48,8 +51,19 @@ public class ChildsGame extends JavaPlugin
         getConfig().addDefault("Arena.Countdown", 30);
         getConfig().addDefault("Arena.SeekerCountdown", 20);
         getConfig().addDefault("Arena.SeekerRespawnCountdown", 10);
+        getConfig().addDefault("SeekerWinCommands", new String[]
+        {
+            "give %player 266 10", "msg %player Congratulations, you won ;)"
+        });
+        getConfig().addDefault("KillCommands", new String[]
+        {
+            "msg %player You killed %killed"
+        });
         getConfig().options().copyDefaults(true);
         saveConfig();
+
+        seekerWinCommands = (ArrayList<String>) getConfig().getStringList("SeekerWinCommands");
+        killCommands = (ArrayList<String>) getConfig().getStringList("KillCommands");
 
         File arenaFolder = new File("plugins/ChildsGame/arenas/");
         if (!arenaFolder.exists())
@@ -62,7 +76,7 @@ public class ChildsGame extends JavaPlugin
             Location loc1 = null, loc2 = null, spawnHider = null, spawnSeeker = null, spawnWaiting = null, spawnEnd = null;
             Sign sign = null;
             int maxPlayers = 0, startPlayers = 0;
-            HashMap<Integer, String> bl = null;
+            HashMap<ItemStack, String> bl = null;
 
             try
             {
@@ -118,12 +132,21 @@ public class ChildsGame extends JavaPlugin
                                 startPlayers = Integer.parseInt(split[1]);
                             } else if (split[0].equals("blocks"))
                             {
-                                bl = new HashMap<Integer, String>();
+                                bl = new HashMap<ItemStack, String>();
                                 String[] block = split[1].split(";");
                                 for (String b : block)
                                 {
-                                    String[] b_split = b.split(":");
-                                    bl.put(Integer.parseInt(b_split[0]), b_split[1]);
+                                    String[] b_split = b.split(",");
+                                    String[] b_split1 = b_split[0].split(":");
+                                    ItemStack is;
+                                    if (b_split1.length >= 2)
+                                    {
+                                        is = new ItemStack(Material.getMaterial(Integer.parseInt(b_split1[0])), 1, Short.parseShort(b_split1[1]));
+                                    } else
+                                    {
+                                        is = new ItemStack(Material.getMaterial(Integer.parseInt(b_split[0])));
+                                    }
+                                    bl.put(is, b_split[1]);
 
                                 }
                             }
@@ -131,7 +154,7 @@ public class ChildsGame extends JavaPlugin
                     }
                 }
                 reader.close();
-                
+
                 Arena a = new Arena(this, name, loc1, loc2, spawnHider, spawnSeeker, spawnWaiting, spawnEnd, sign, maxPlayers, startPlayers, bl);
                 arenas.put(name, a);
             } catch (FileNotFoundException ex)
@@ -251,13 +274,19 @@ public class ChildsGame extends JavaPlugin
                     pw.println(a.getStartPlayers());
                 }
                 pw.print("blocks: ");
-                System.out.println(a.getBlocks() == null);
                 if (a.getBlocks() != null)
                 {
                     String blocks = "";
-                    for (Map.Entry<Integer, String> entry : a.getBlocks().entrySet())
+                    for (Map.Entry<ItemStack, String> entry : a.getBlocks().entrySet())
                     {
-                        String b = entry.getKey() + ":" + entry.getValue();
+                        String b;
+                        if (entry.getKey().getDurability() != (short) 0)
+                        {
+                            b = entry.getKey().getTypeId() + ":" + entry.getKey().getDurability() + "," + entry.getValue();
+                        } else
+                        {
+                            b = entry.getKey().getTypeId() + "," + entry.getValue();
+                        }
                         blocks = blocks + b + ";";
                     }
                     if (blocks.length() >= 1)
@@ -365,6 +394,16 @@ public class ChildsGame extends JavaPlugin
     public HashMap<String, Arena> getArenas()
     {
         return arenas;
+    }
+
+    public ArrayList<String> getSeekerWinCommands()
+    {
+        return seekerWinCommands;
+    }
+
+    public ArrayList<String> getKillCommands()
+    {
+        return killCommands;
     }
 
 }

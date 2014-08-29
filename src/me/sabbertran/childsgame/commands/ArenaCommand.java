@@ -133,7 +133,7 @@ public class ArenaCommand implements CommandExecutor
                                     String[] block = id.split(":");
                                     if (block.length == 2)
                                     {
-                                        main.getArenas().get(args[1]).getBlocks().put(Integer.parseInt(block[0]), block[1].replace("_", " "));
+                                        main.getArenas().get(args[1]).getBlocks().put(new ItemStack(Material.getMaterial(Integer.parseInt(block[0]))), block[1].replace("_", " "));
                                     } else
                                     {
 //                                    sender.sendMessage("Use /arena blocks 'arena' 'ID1:Name,ID2:Name,ID3:Name,...' to set the blocks for an arena.");
